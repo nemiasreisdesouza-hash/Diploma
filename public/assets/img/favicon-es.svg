@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 70" width="70" height="70" role="img" aria-label="Bandeira do Espírito Santo">
+  <title>Bandeira do Espírito Santo</title>
+  <defs>
+    <clipPath id="es-round"><rect width="70" height="70" rx="13" ry="13"/></clipPath>
+  </defs>
+  <g clip-path="url(#es-round)">
+    <rect width="70" height="23.34" fill="#56aaeb"/>
+    <rect y="23.34" width="70" height="23.32" fill="#ffffff"/>
+    <rect y="46.66" width="70" height="23.34" fill="#f7a8c0"/>
+    <path id="es-arc" d="M 11 30.5 Q 35 25.4 59 30.5" fill="none" stroke="none"/>
+    <text font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+          font-size="4.6" font-weight="700" fill="#216fb7" letter-spacing="0.12">
+      <textPath href="#es-arc" startOffset="50%" text-anchor="middle">TRABALHA E CONFIA</textPath>
+    </text>
+  </g>
+</svg>

@@ -1,0 +1,13 @@
+{
+  "name": "diploma-de-honra",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gerador de Diploma de Honra ao Mérito — Direita Espírito Santo Oficial",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
