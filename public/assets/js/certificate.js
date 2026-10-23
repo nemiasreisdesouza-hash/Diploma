@@ -33,17 +33,26 @@
       /* quando o nome não cabe em uma linha, ele é dividido em duas */
       twoLines: { bandTop: 476, bandBottom: 589, size: 82, minSize: 40, maxWidth: 660, lineStep: 1.04 }
     },
-    date: { cx: 768, baseline: 795, size: 30, maxWidth: 442, minSize: 18 },
+    date: { cx: 768, baseline: 795, size: 30, maxWidth: 450, minSize: 18 },
+    /* As réguas de assinatura ficam em y = 857: o nome é escrito ACIMA delas
+       e a legenda (cargo) logo ABAIXO. */
     signatureNames: {
-      baseline: 880,
-      size: 20.8,
-      minSize: 15.4,
-      maxWidth: 262,
-      /* nomes longos viram duas linhas, empurrando o subtítulo um pouco para baixo */
-      twoLines: { baselines: [874, 890], size: 15.4, minSize: 11.5, maxWidth: 258 }
+      baseline: 845,
+      size: 21,
+      minSize: 12,
+      singleLineMin: 17.2,
+      maxWidth: 330,
+      twoLines: {
+        bandTop: 800,
+        bandBottom: 851,
+        size: 17,
+        minSize: 10.5,
+        maxWidth: 330,
+        lineStep: 1.12
+      }
     },
-    signatureSubs: { baseline: 906, size: 16.6, minSize: 10.5, maxWidth: 252 },
-    columns: [380, 772, 1164]
+    signatureSubs: { baseline: 882, size: 15.6, minSize: 9.5, maxWidth: 320 },
+    columns: [376.5, 770.5, 1163]
   };
 
   const FONTS = {
@@ -261,26 +270,31 @@
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
       if ('letterSpacing' in ctx) ctx.letterSpacing = '-0.3px';
-      setFont(ctx, FONTS.name, laid.size);
+      setFont(ctx, laid.font || FONTS.name, laid.size);
       ctx.fillText(line, cfg.cx, laid.baselines[index]);
       ctx.restore();
     });
   }
 
   /**
-   * Nome na linha de assinatura: uma linha se couber; senão, duas linhas.
+   * Nome na linha de assinatura. O nome é escrito ACIMA da régua;
+   * se não couber em uma linha legível, é dividido em duas linhas.
    */
   function drawSignatureName(ctx, text, cx) {
     const cfg = LAYOUT.signatureNames;
     const width = measure(ctx, text, FONTS.signature, cfg.size);
+    const singleSize = width <= cfg.maxWidth
+      ? cfg.size
+      : (cfg.size * cfg.maxWidth) / width;
 
-    if (width <= cfg.maxWidth) {
+    /* abaixo disso o nome ficaria minúsculo: prefere duas linhas */
+    if (singleSize >= cfg.singleLineMin) {
       drawFitted(ctx, text, {
         cx,
         baseline: cfg.baseline,
         color: COLORS.signature,
         font: FONTS.signature,
-        size: cfg.size,
+        size: singleSize,
         minSize: cfg.minSize,
         maxWidth: cfg.maxWidth,
         tracking: 0.1
@@ -289,37 +303,36 @@
     }
 
     const parts = splitInTwoLines(text);
-    const two = cfg.twoLines;
-    const fitsTwo = parts && Math.max(
-      measure(ctx, parts.top, FONTS.signature, two.size),
-      measure(ctx, parts.bottom, FONTS.signature, two.size)
-    ) <= two.maxWidth;
+    const laid = parts && layoutTwoLines(
+      ctx,
+      [parts.top, parts.bottom],
+      cfg.twoLines,
+      FONTS.signature
+    );
 
-    if (fitsTwo) {
-      [parts.top, parts.bottom].forEach((line, i) => {
-        drawFitted(ctx, line, {
-          cx,
-          baseline: two.baselines[i],
-          color: COLORS.signature,
-          font: FONTS.signature,
-          size: two.size,
-          minSize: two.minSize,
-          maxWidth: two.maxWidth,
-          tracking: 0.1
-        });
+    if (!laid) {
+      drawFitted(ctx, text, {
+        cx,
+        baseline: cfg.baseline,
+        color: COLORS.signature,
+        font: FONTS.signature,
+        size: cfg.minSize,
+        minSize: 9,
+        maxWidth: cfg.maxWidth,
+        tracking: 0.1
       });
       return;
     }
 
-    drawFitted(ctx, text, {
-      cx,
-      baseline: cfg.baseline,
-      color: COLORS.signature,
-      font: FONTS.signature,
-      size: cfg.size,
-      minSize: 11,
-      maxWidth: cfg.maxWidth,
-      tracking: 0.1
+    laid.lines.forEach((line, index) => {
+      ctx.save();
+      ctx.fillStyle = COLORS.signature;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '0.1px';
+      setFont(ctx, FONTS.signature, laid.size);
+      ctx.fillText(line, cx, laid.baselines[index]);
+      ctx.restore();
     });
   }
 
@@ -327,10 +340,10 @@
    * Ajusta duas linhas de nome dentro de uma faixa vertical fixa,
    * reduzindo o corpo até caber em largura e altura.
    */
-  function layoutTwoLines(ctx, lines, cfg) {
+  function layoutTwoLines(ctx, lines, cfg, font = FONTS.name) {
     for (let size = cfg.size; size >= cfg.minSize; size -= 0.5) {
       ctx.save();
-      setFont(ctx, FONTS.name, size);
+      setFont(ctx, font, size);
       const widths = lines.map((line) => ctx.measureText(line).width);
       const m1 = ctx.measureText(lines[0]);
       const m2 = ctx.measureText(lines[1]);
@@ -338,7 +351,7 @@
       const descent = m2.actualBoundingBoxDescent || size * 0.26;
       ctx.restore();
 
-      const step = size * cfg.lineStep;
+      const step = size * (cfg.lineStep || 1.05);
       const blockHeight = ascent + step + descent;
       const fitsWidth = Math.max(...widths) <= cfg.maxWidth;
       const fitsHeight = blockHeight <= cfg.bandBottom - cfg.bandTop;
@@ -346,7 +359,7 @@
       if (fitsWidth && fitsHeight) {
         const top = cfg.bandTop + (cfg.bandBottom - cfg.bandTop - blockHeight) / 2;
         const b1 = top + ascent;
-        return { size, lines, baselines: [b1, b1 + step] };
+        return { size, font, lines, baselines: [b1, b1 + step] };
       }
     }
     return null;
