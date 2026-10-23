@@ -11,9 +11,10 @@
   const HEIGHT = 1024;
 
   /* Caminho da arte-base. WebP primeiro (mais leve), PNG como reserva. */
+  const ASSET_VERSION = '3';
   const SOURCES = [
-    'assets/img/diploma-base.webp',
-    'assets/img/diploma-base.png'
+    `assets/img/diploma-base.webp?v=${ASSET_VERSION}`,
+    `assets/img/diploma-base.png?v=${ASSET_VERSION}`
   ];
 
   const COLORS = {
@@ -27,11 +28,11 @@
     name: {
       cx: 748,
       baseline: 566,
-      size: 124,
-      maxWidth: 700,
-      minSize: 62,
+      size: 116,
+      maxWidth: 676,
+      minSize: 58,
       /* quando o nome não cabe em uma linha, ele é dividido em duas */
-      twoLines: { bandTop: 476, bandBottom: 589, size: 82, minSize: 40, maxWidth: 660, lineStep: 1.04 }
+      twoLines: { bandTop: 484, bandBottom: 586, size: 78, minSize: 38, maxWidth: 640, lineStep: 1.04 }
     },
     date: { cx: 768, baseline: 795, size: 30, maxWidth: 450, minSize: 18 },
     /* As réguas de assinatura ficam em y = 857: o nome é escrito ACIMA delas
