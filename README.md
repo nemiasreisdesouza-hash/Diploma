@@ -4,6 +4,13 @@ Gerador web do **Diploma de Honra ao Mérito** da Direita Espírito Santo Oficia
 O usuário preenche o nome do homenageado, a cidade/UF, a data e as assinaturas, e o
 diploma é montado em tempo real sobre a arte oficial — no próprio navegador.
 
+> **Bloqueio de geração:** o botão **Gerar meu diploma** fica desabilitado até que
+> *todos* os campos obrigatórios (nome, cidade/UF, data, presidente, coordenador)
+> estejam preenchidos **e** os termos de uso aceitos. O contador abaixo do botão
+> mostra quantos campos ainda faltam, e o download/compartilhamento só aparecem
+> depois que o diploma é gerado. Qualquer alteração nos dados esconde o resultado
+> e exige gerar novamente.
+
 ![Prévia](public/assets/img/diploma-base.webp)
 
 ## Como rodar
@@ -24,10 +31,22 @@ serve a pasta `public/`.
   posiciona os textos nas coordenadas exatas dos campos originais
   (`LAYOUT` / `COLORS`), com ajuste automático de corpo para nomes longos
   (uma linha grande → duas linhas equilibradas).
-- `public/assets/js/app.js` — interface: prévia ao vivo, zoom/arraste, validação,
-  download em PNG 3072×2048 e compartilhamento nativo.
+- `public/assets/js/app.js` — interface: prévia ao vivo, zoom/arraste, bloqueio e
+  validação dos campos obrigatórios, download em PNG 3072×2048, compartilhamento
+  nativo e impressão em A4.
 - `assets-origem/diploma-modelo-original.png` — modelo original enviado, guardado
   como referência (não é usado em produção).
+
+## Regras de preenchimento
+
+| Campo | Obrigatório |
+| --- | --- |
+| Seu nome (homenageado) | sim |
+| Cidade ou estado | sim |
+| Data do diploma | sim |
+| Nome da presidente | sim |
+| Nome do coordenador geral | sim |
+| Termos de uso | sim |
 
 Todo o processamento é local (client-side): nome, cidade e data não são enviados
 para nenhum servidor.

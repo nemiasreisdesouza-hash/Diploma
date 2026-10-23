@@ -290,6 +290,40 @@ body {
 .form { display: block; }
 
 .field { margin-bottom: 16px; min-width: 0; }
+
+.form__notice {
+  margin: 0 0 18px;
+  padding: 11px 14px;
+  border-radius: 9px;
+  border: 1px solid rgba(247, 197, 63, 0.38);
+  background: rgba(247, 197, 63, 0.08);
+  color: #f3dfa6;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.45;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.form__notice::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 4px rgba(247, 197, 63, 0.16);
+}
+.form__notice.is-complete {
+  border-color: rgba(47, 162, 115, 0.55);
+  background: rgba(11, 84, 57, 0.32);
+  color: #a9f2c9;
+}
+.form__notice.is-complete::before { background: #74e6ab; box-shadow: 0 0 0 4px rgba(116, 230, 171, 0.16); }
+
+.req { color: var(--gold); font-weight: 800; }
+
+.field.is-missing label { color: #ffd9cd; }
 .field-row { display: grid; grid-template-columns: 1fr 200px; gap: 14px; }
 
 .field label {
@@ -362,7 +396,7 @@ body {
   margin: 7px 0 0;
   font-size: 12.5px;
   font-weight: 600;
-  color: #ffb4a6;
+  color: #ffc2b3;
 }
 
 /* Checkbox --------------------------------------------------- */
@@ -429,6 +463,7 @@ body {
 
 /* Buttons ---------------------------------------------------- */
 .cta {
+  position: relative;
   width: 100%;
   height: 54px;
   border: 0;
@@ -445,7 +480,29 @@ body {
 }
 .cta:hover { filter: brightness(1.05); box-shadow: 0 12px 28px rgba(255, 180, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.4) inset; }
 .cta:active { transform: translateY(1px); }
-.cta:disabled { cursor: progress; filter: saturate(0.8) brightness(0.95); }
+.cta:disabled,
+.cta[aria-disabled='true'] {
+  cursor: not-allowed;
+  background: linear-gradient(180deg, #43566a 0%, #38495b 100%);
+  color: #a9c0d4;
+  box-shadow: none;
+  transform: none;
+  filter: none;
+}
+.cta.is-busy { cursor: progress; }
+
+.cta__counter {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  opacity: 0.9;
+}
+.cta__counter:empty { display: none; }
+
+.check.is-missing .check__text { color: #ffd9cd; }
+.check.is-missing .check__box { border-color: #e2705f; }
 
 .btn {
   height: 48px;

@@ -20,9 +20,16 @@
     coordenador: $('coordenador'),
     termos: $('termos'),
     nomeError: $('nomeError'),
+    cidadeError: $('cidadeError'),
+    dataError: $('dataError'),
+    presidenteError: $('presidenteError'),
+    coordenadorError: $('coordenadorError'),
     dataExtenso: $('dataExtenso'),
     termosError: $('termosError'),
+    formNotice: $('formNotice'),
     generate: $('generate'),
+    generateLabel: $('generateLabel'),
+    generateCounter: $('generateCounter'),
     result: $('result'),
     resultText: $('resultText'),
     download: $('download'),
@@ -47,6 +54,15 @@
     generated: false,
     lastBlobUrl: null
   };
+
+  /* Campos que precisam estar preenchidos para liberar o diploma. */
+  const REQUIRED_FIELDS = [
+    { key: 'nome', el: 'nome', error: 'nomeError', message: 'Escreva o nome que vai aparecer no diploma.' },
+    { key: 'cidade', el: 'cidade', error: 'cidadeError', message: 'Informe a cidade ou o estado.' },
+    { key: 'data', el: 'data', error: 'dataError', message: 'Escolha a data do diploma.' },
+    { key: 'presidente', el: 'presidente', error: 'presidenteError', message: 'Informe o nome da presidente.' },
+    { key: 'coordenador', el: 'coordenador', error: 'coordenadorError', message: 'Informe o nome do coordenador geral.' }
+  ];
 
   /* --------------------------- dados --------------------------- */
   function readForm() {
@@ -78,9 +94,6 @@
       if (saved.date) els.data.value = saved.date;
       if (saved.president) els.presidente.value = saved.president;
       if (saved.coordinator) els.coordenador.value = saved.coordinator;
-    } else {
-      els.cidade.value = 'Vitória/ES';
-      els.data.value = window.Certificate.todayISO();
     }
   }
 
@@ -103,6 +116,17 @@
   function schedulePreview() {
     clearTimeout(renderTimer);
     renderTimer = setTimeout(drawPreview, 90);
+  }
+
+  /** Depois de gerado, qualquer alteração exige gerar novamente. */
+  function invalidateResult() {
+    if (!state.generated) return;
+    state.generated = false;
+    els.result.hidden = true;
+    if (state.lastBlobUrl) {
+      URL.revokeObjectURL(state.lastBlobUrl);
+      state.lastBlobUrl = null;
+    }
   }
 
   /* --------------------------- zoom/pan ------------------------ */
@@ -207,39 +231,102 @@
   }
 
   /* --------------------------- validação ----------------------- */
+
+  function isFilled(field) {
+    return Boolean((els[field.el].value || '').trim());
+  }
+
+  /** Quantos campos obrigatórios (inclusive os termos) ainda faltam. */
+  function pendingFields() {
+    const missing = REQUIRED_FIELDS.filter((field) => !isFilled(field));
+    if (!els.termos.checked) missing.push({ key: 'termos' });
+    return missing;
+  }
+
   function clearErrors() {
-    els.nomeError.hidden = true;
+    REQUIRED_FIELDS.forEach((field) => {
+      els[field.error].hidden = true;
+      els[field.el].classList.remove('is-invalid');
+      els[field.el].closest('.field').classList.remove('is-missing');
+    });
     els.termosError.hidden = true;
-    els.nome.classList.remove('is-invalid');
+    els.termos.closest('.check').classList.remove('is-missing');
+  }
+
+  /**
+   * Bloqueia/libera o botão de gerar. O diploma só pode ser criado
+   * quando todos os campos estiverem preenchidos e os termos aceitos.
+   */
+  function refreshGate() {
+    const missing = pendingFields();
+    const total = REQUIRED_FIELDS.length + 1;
+    const ready = missing.length === 0;
+
+    els.generate.disabled = !ready;
+    els.generate.setAttribute('aria-disabled', String(!ready));
+
+    if (ready) {
+      els.formNotice.textContent = 'Tudo preenchido. Já pode gerar o seu diploma.';
+      els.formNotice.classList.add('is-complete');
+      els.generateCounter.textContent = '';
+    } else {
+      const falta = missing.length === 1 ? '1 campo pendente' : `${missing.length} campos pendentes`;
+      els.formNotice.textContent =
+        `Preencha todos os campos para liberar a geração do diploma (${total - missing.length} de ${total}).`;
+      els.formNotice.classList.remove('is-complete');
+      els.generateCounter.textContent = falta;
+
+      /* marca suavemente o que falta, sem mostrar erro em vermelho */
+      REQUIRED_FIELDS.forEach((field) => {
+        const isEmpty = !isFilled(field);
+        els[field.el].closest('.field').classList.toggle('is-missing', isEmpty && field.key === missing[0].key);
+      });
+      els.termos.closest('.check').classList.toggle('is-missing', !els.termos.checked && missing[0].key === 'termos');
+    }
+
+    return ready;
   }
 
   function validate() {
     clearErrors();
-    let valid = true;
+    const missing = pendingFields();
+    if (!missing.length) return true;
 
-    if (!els.nome.value.trim()) {
-      els.nomeError.hidden = false;
-      els.nome.classList.add('is-invalid');
-      els.nome.focus();
-      valid = false;
-    }
+    let firstFocus = null;
+
+    REQUIRED_FIELDS.forEach((field) => {
+      if (isFilled(field)) return;
+      els[field.error].hidden = false;
+      els[field.el].classList.add('is-invalid');
+      els[field.el].closest('.field').classList.add('is-missing');
+      if (!firstFocus) firstFocus = els[field.el];
+    });
 
     if (!els.termos.checked) {
       els.termosError.hidden = false;
-      if (valid) els.termos.focus();
-      valid = false;
+      els.termos.closest('.check').classList.add('is-missing');
+      if (!firstFocus) firstFocus = els.termos;
     }
 
-    return valid;
+    if (firstFocus) firstFocus.focus();
+    return false;
   }
 
   /* --------------------------- gerar --------------------------- */
   async function generate(event) {
     if (event) event.preventDefault();
+
+    /* bloqueio: sem todos os campos + termos, nada de diploma */
+    if (!refreshGate()) {
+      validate();
+      return;
+    }
     if (!validate()) return;
 
     els.generate.disabled = true;
-    els.generate.textContent = 'Gerando…';
+    els.generate.classList.add('is-busy');
+    els.generateLabel.textContent = 'Gerando…';
+    els.generateCounter.textContent = '';
 
     try {
       await window.Certificate.ensureFonts();
@@ -263,8 +350,9 @@
       els.resultText.textContent = 'Não foi possível gerar agora. Tente novamente.';
       els.resultNote.textContent = '';
     } finally {
-      els.generate.disabled = false;
-      els.generate.textContent = 'Gerar meu diploma';
+      els.generate.classList.remove('is-busy');
+      els.generateLabel.textContent = 'Gerar meu diploma';
+      refreshGate();
     }
   }
 
@@ -409,22 +497,42 @@
       const el = els[key];
       el.addEventListener('input', () => {
         if (key === 'data') updateDateHint();
-        if (key === 'nome' && el.value.trim()) {
-          els.nomeError.hidden = true;
-          els.nome.classList.remove('is-invalid');
+        if (el.value.trim()) {
+          els[key + 'Error'].hidden = true;
+          el.classList.remove('is-invalid');
+          el.closest('.field').classList.remove('is-missing');
         }
+        invalidateResult();
+        refreshGate();
         schedulePreview();
         saveToStorage();
       });
       el.addEventListener('change', () => {
         if (key === 'data') updateDateHint();
+        invalidateResult();
+        refreshGate();
         schedulePreview();
         saveToStorage();
+      });
+      el.addEventListener('blur', () => {
+        if (!el.value.trim()) {
+          els[key + 'Error'].hidden = false;
+          el.classList.add('is-invalid');
+        } else {
+          els[key + 'Error'].hidden = true;
+          el.classList.remove('is-invalid');
+          el.closest('.field').classList.remove('is-missing');
+        }
       });
     });
 
     els.termos.addEventListener('change', () => {
-      if (els.termos.checked) els.termosError.hidden = true;
+      if (els.termos.checked) {
+        els.termosError.hidden = true;
+        els.termos.closest('.check').classList.remove('is-missing');
+      }
+      invalidateResult();
+      refreshGate();
     });
 
     await Promise.all([
@@ -433,6 +541,7 @@
     ]);
 
     await drawPreview();
+    refreshGate();
     document.body.classList.add('is-ready');
   }
 

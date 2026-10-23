@@ -48,36 +48,46 @@
     </section>
 
     <form class="form" id="form" novalidate>
+      <p class="form__notice" id="formNotice">
+        Preencha todos os campos para liberar a geração do diploma.
+      </p>
+
       <div class="field">
-        <label for="nome">Seu nome</label>
+        <label for="nome">Seu nome <span class="req" aria-hidden="true">*</span></label>
         <input id="nome" name="nome" type="text" autocomplete="name" maxlength="70"
-               placeholder="Como quer que saia no diploma" required />
+               placeholder="Como quer que saia no diploma" required aria-required="true" />
         <p class="field__error" id="nomeError" hidden>Escreva o nome que vai aparecer no diploma.</p>
       </div>
 
       <div class="field-row">
         <div class="field">
-          <label for="cidade">Seu estado ou cidade</label>
+          <label for="cidade">Seu estado ou cidade <span class="req" aria-hidden="true">*</span></label>
           <input id="cidade" name="cidade" type="text" maxlength="46"
-                 placeholder="Digite: Serra/ES, Vitória/ES…" autocomplete="address-level2" />
+                 placeholder="Digite: Serra/ES, Vitória/ES…" autocomplete="address-level2"
+                 required aria-required="true" />
+          <p class="field__error" id="cidadeError" hidden>Informe a cidade ou o estado.</p>
         </div>
         <div class="field">
-          <label for="data">Data do diploma</label>
-          <input id="data" name="data" type="date" aria-describedby="dataExtenso" />
-          <p class="field__hint" id="dataExtenso">23 de outubro de 2026</p>
+          <label for="data">Data do diploma <span class="req" aria-hidden="true">*</span></label>
+          <input id="data" name="data" type="date" aria-describedby="dataExtenso"
+                 required aria-required="true" />
+          <p class="field__hint" id="dataExtenso"></p>
+          <p class="field__error" id="dataError" hidden>Escolha a data do diploma.</p>
         </div>
       </div>
 
       <div class="field">
-        <label for="presidente">Nome da presidente</label>
+        <label for="presidente">Nome da presidente <span class="req" aria-hidden="true">*</span></label>
         <input id="presidente" name="presidente" type="text" maxlength="46"
-               placeholder="Nome da Presidente" />
+               placeholder="Nome da Presidente" required aria-required="true" />
+        <p class="field__error" id="presidenteError" hidden>Informe o nome da presidente.</p>
       </div>
 
       <div class="field">
-        <label for="coordenador">Nome do coordenador geral</label>
+        <label for="coordenador">Nome do coordenador geral <span class="req" aria-hidden="true">*</span></label>
         <input id="coordenador" name="coordenador" type="text" maxlength="46"
-               placeholder="Nome do Coordenador Geral" />
+               placeholder="Nome do Coordenador Geral" required aria-required="true" />
+        <p class="field__error" id="coordenadorError" hidden>Informe o nome do coordenador geral.</p>
       </div>
 
       <label class="check" for="termos">
@@ -87,7 +97,10 @@
       </label>
       <p class="field__error" id="termosError" hidden>Marque a caixa dos termos para gerar o diploma.</p>
 
-      <button class="cta" id="generate" type="submit">Gerar meu diploma</button>
+      <button class="cta" id="generate" type="submit" disabled aria-disabled="true">
+        <span id="generateLabel">Gerar meu diploma</span>
+        <span class="cta__counter" id="generateCounter"></span>
+      </button>
 
       <div class="result" id="result" hidden aria-live="polite">
         <p class="result__msg">
