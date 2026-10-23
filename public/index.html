@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Diploma de Honra ao Mérito — Faça seu diploma</title>
+  <meta name="description" content="Monte seu Diploma de Honra ao Mérito em segundos: preencha o nome, a data e baixe o arquivo em alta resolução." />
+  <meta name="theme-color" content="#04223c" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Diploma de Honra ao Mérito — Faça seu diploma" />
+  <meta property="og:description" content="Monte seu Diploma de Honra ao Mérito em segundos e baixe em alta resolução." />
+  <meta property="og:image" content="assets/img/diploma-base.png" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2304223c'/%3E%3Cpath d='M32 12l5.6 12.6L51 26l-9.8 9.2L43.7 50 32 43.4 20.3 50l2.5-14.8L13 26l13.4-1.4z' fill='%23f7c53f'/%3E%3C/svg%3E" />
+  <link rel="preload" href="assets/fonts/PlusJakartaSans-Variable.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="assets/fonts/CormorantGaramond-MediumItalic.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="assets/fonts/EBGaramond-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <div class="aurora" aria-hidden="true"></div>
+
+  <main class="page">
+    <header class="hero">
+      <p class="eyebrow">Diploma de Honra ao Mérito</p>
+      <h1 class="hero__title">Faça seu diploma</h1>
+      <p class="hero__sub">
+        Preencha os dados e veja o diploma montado na hora, com o nome de quem você quer homenagear.
+      </p>
+    </header>
+
+    <section class="preview" aria-label="Prévia do diploma">
+      <div class="preview__frame">
+        <div class="preview__viewport" id="viewport">
+          <canvas id="previewCanvas" width="1536" height="1024" role="img"
+                  aria-label="Prévia do Diploma de Honra ao Mérito"></canvas>
+        </div>
+      </div>
+
+      <div class="preview__controls">
+        <button class="zoom" id="zoomOut" type="button" aria-label="Diminuir o zoom">−</button>
+        <button class="preview__hint" id="resetView" type="button">
+          Arraste a imagem e use <b>+</b> e <b>−</b> para ajustar o zoom
+        </button>
+        <button class="zoom" id="zoomIn" type="button" aria-label="Aumentar o zoom">+</button>
+      </div>
+    </section>
+
+    <form class="form" id="form" novalidate>
+      <div class="field">
+        <label for="nome">Seu nome</label>
+        <input id="nome" name="nome" type="text" autocomplete="name" maxlength="70"
+               placeholder="Como quer que saia no diploma" required />
+        <p class="field__error" id="nomeError" hidden>Escreva o nome que vai aparecer no diploma.</p>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="cidade">Seu estado ou cidade</label>
+          <input id="cidade" name="cidade" type="text" maxlength="46"
+                 placeholder="Digite: Serra/ES, Vitória/ES…" autocomplete="address-level2" />
+        </div>
+        <div class="field">
+          <label for="data">Data do diploma</label>
+          <input id="data" name="data" type="date" aria-describedby="dataExtenso" />
+          <p class="field__hint" id="dataExtenso">23 de outubro de 2026</p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="presidente">Nome da presidente</label>
+        <input id="presidente" name="presidente" type="text" maxlength="46"
+               placeholder="Nome da Presidente" />
+      </div>
+
+      <div class="field">
+        <label for="coordenador">Nome do coordenador geral</label>
+        <input id="coordenador" name="coordenador" type="text" maxlength="46"
+               placeholder="Nome do Coordenador Geral" />
+      </div>
+
+      <label class="check" for="termos">
+        <input id="termos" name="termos" type="checkbox" required />
+        <span class="check__box" aria-hidden="true"></span>
+        <span class="check__text">Concordo com os termos de uso <button class="link" type="button" id="openTerms">ver termos</button></span>
+      </label>
+      <p class="field__error" id="termosError" hidden>Marque a caixa dos termos para gerar o diploma.</p>
+
+      <button class="cta" id="generate" type="submit">Gerar meu diploma</button>
+
+      <div class="result" id="result" hidden aria-live="polite">
+        <p class="result__msg">
+          <span class="result__check" aria-hidden="true">✓</span>
+          <span id="resultText">Diploma gerado.</span>
+        </p>
+        <div class="result__actions">
+          <button class="btn btn--gold" id="download" type="button">Baixar diploma</button>
+          <button class="btn btn--ghost" id="share" type="button">Compartilhar</button>
+        </div>
+        <button class="result__print" id="print" type="button">ou imprimir na folha A4</button>
+        <p class="result__note" id="resultNote">Arquivo em alta resolução (3072 × 2048 px), pronto para imprimir.</p>
+      </div>
+
+      <p class="footnote">
+        Seus dados não saem do seu aparelho: o diploma é montado aqui nesta tela.
+        Diploma honorário, sem valor de documento.
+      </p>
+    </form>
+  </main>
+
+  <dialog class="terms" id="terms">
+    <div class="terms__body">
+      <h2>Termos de uso</h2>
+      <p>
+        Este gerador cria um <strong>diploma honorário</strong>, de caráter simbólico e comemorativo.
+        O arquivo não é um documento oficial e não substitui certificação emitida por qualquer
+        instituição.
+      </p>
+      <p>
+        Todo o processamento acontece no seu navegador: nome, cidade, data e demais informações
+        não são enviados nem armazenados em nenhum servidor.
+      </p>
+      <p>
+        Ao gerar o diploma você declara que as informações preenchidas são verdadeiras e que o uso
+        do arquivo é de sua responsabilidade.
+      </p>
+      <button class="btn btn--gold" id="closeTerms" type="button">Entendi</button>
+    </div>
+  </dialog>
+
+  <script src="assets/js/certificate.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
